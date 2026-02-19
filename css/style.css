@@ -2688,17 +2688,17 @@ h1 {
 .binder-actions {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin: 20px 0;
   flex-wrap: wrap;
 }
 
 .btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
   border-radius: 6px;
   background: var(--accent, #e63946);
   color: white;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -2706,7 +2706,8 @@ h1 {
 
 .btn:hover {
   background: var(--accent-hover, #d62839);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .btn-danger {
@@ -2719,40 +2720,45 @@ h1 {
 
 .remove-from-binder {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 24px;
-  height: 24px;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 50%;
-  background: rgba(244, 67, 54, 0.9);
+  background: rgba(244, 67, 54, 0.95);
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
+  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .remove-from-binder:hover {
   background: #f44336;
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 80px 20px;
   color: var(--text-secondary, #999);
 }
 
 .empty-state h2 {
   color: var(--text, #f0f0f0);
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
 }
 
 .empty-state p {
   font-size: 1.1rem;
+  line-height: 1.6;
 }

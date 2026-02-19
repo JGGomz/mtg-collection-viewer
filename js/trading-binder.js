@@ -6,10 +6,13 @@ async function loadBinder() {
   const params = new URLSearchParams(window.location.search);
   const shared = params.get('cards');
   
+  console.log('Loading binder, collection size:', collection.length);
+  
   if (shared) {
     // Load from shared link
     try {
       const ids = shared.split(',');
+      console.log('Loading from shared link:', ids.length, 'cards');
       binderCards = collection.filter(c => ids.includes(c.scryfallId));
       localStorage.setItem('tradingBinder', JSON.stringify(ids));
     } catch (e) {
@@ -18,10 +21,13 @@ async function loadBinder() {
   } else {
     // Load from localStorage
     const stored = localStorage.getItem('tradingBinder');
+    console.log('LocalStorage tradingBinder:', stored);
     if (stored) {
       try {
         const ids = JSON.parse(stored);
+        console.log('Loading from localStorage:', ids.length, 'IDs');
         binderCards = collection.filter(c => ids.includes(c.scryfallId));
+        console.log('Matched cards:', binderCards.length);
       } catch (e) {
         console.error('Failed to load binder:', e);
       }

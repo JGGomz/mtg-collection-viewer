@@ -292,7 +292,8 @@ function addToTradingBinder(scryfallId) {
   
   ids.push(scryfallId);
   localStorage.setItem('tradingBinder', JSON.stringify(ids));
-  showNotification('Added to trading binder');
+  console.log('Added to binder:', scryfallId, 'Total cards:', ids.length);
+  showNotification('✓ Added to trading binder');
 }
 
 function showNotification(message) {
@@ -432,6 +433,8 @@ async function loadCollection() {
 
 function setupPriceSlider() {
   const slider = document.getElementById('price-range');
+  if (!slider) return; // Skip if no slider element
+  
   priceSlider = noUiSlider.create(slider, {
     start: [0, maxPriceValue],
     connect: true,
