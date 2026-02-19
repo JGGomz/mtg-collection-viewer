@@ -2739,6 +2739,20 @@ h1 {
 }
 
 .btn-small:hover {
+}
+
+.sync-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-small.btn-secondary {
+  background: #555;
+}
+
+.btn-small.btn-secondary:hover {
+  background: #666;
   background: var(--accent-hover);
 }
 
@@ -2803,6 +2817,20 @@ h1 {
 }
 
 .btn-small:hover {
+}
+
+.sync-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-small.btn-secondary {
+  background: #555;
+}
+
+.btn-small.btn-secondary:hover {
+  background: #666;
   background: var(--accent-hover);
 }
 
@@ -2910,4 +2938,18 @@ h1 {
 .empty-state p {
   font-size: 1.1rem;
   line-height: 1.6;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-small.btn-secondary {
+  background: #555;
+}
+
+.btn-small.btn-secondary:hover {
+  background: #666;
 }
