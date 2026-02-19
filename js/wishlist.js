@@ -64,26 +64,7 @@ async function fetchCardsFromScryfall(scryfallIds) {
       if (response.ok) {
         const data = await response.json();
         for (const card of data.data) {
-          // Determine foil status based on available prices
-          let foilStatus = 'normal';
-          let usdPrice = card.prices?.usd || '0';
-          
-          // If card has foil/etched price and it's higher, prefer that
-          if (card.prices?.usd_etched && parseFloat(card.prices.usd_etched) > parseFloat(usdPrice)) {
-            foilStatus = 'etched';
-            usdPrice = card.prices.usd_etched;
-          } else if (card.prices?.usd_foil && parseFloat(card.prices.usd_foil) > parseFloat(usdPrice)) {
-            foilStatus = 'foil';
-            usdPrice = card.prices.usd_foil;
-          }
-          
-          // Fallback to any available price
-          if (usdPrice === '0') {
-            usdPrice = card.prices?.usd_foil || card.prices?.usd_etched || '0';
-            if (card.prices?.usd_foil) foilStatus = 'foil';
-            else if (card.prices?.usd_etched) foilStatus = 'etched';
-          }
-          
+          const usdPrice = card.prices?.usd || card.prices?.usd_foil || card.prices?.usd_etched || '0';
           cards.push({
             name: card.name,
             scryfallId: card.id,
@@ -91,9 +72,9 @@ async function fetchCardsFromScryfall(scryfallIds) {
             setName: card.set_name,
             collectorNumber: card.collector_number,
             rarity: card.rarity,
-            foil: foilStatus,
+            foil: 'normal',
             quantity: 1,
-            price: parseFloat(usdPrice),
+            price: parseFloat(card.prices?.usd || '0'),
             currency: 'USD',
             scryfallPrices: card.prices,
             imageUrl: card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal,
