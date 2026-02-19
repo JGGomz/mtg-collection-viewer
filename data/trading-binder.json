@@ -1,10 +1,4 @@
 {
-  "cards": [
-    {
-      "scryfallId": "63bacc32-d6ba-420c-9b49-299c08e5fb39",
-      "addedAt": "2026-02-19T21:44:15.397Z"
-    }
-  ],
-  "lastModified": "2026-02-19T21:44:15.397Z",
-  "passwordHash": "a9ab99bc6167f801e4b43cf1c569b4f7e1c52a3017a0eb2693c4cb87e8810103"
+  "cards": [],
+  "lastModified": "2026-02-19T21:51:40.856Z"
 }

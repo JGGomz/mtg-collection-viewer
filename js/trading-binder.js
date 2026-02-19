@@ -116,13 +116,25 @@ async function loadPersistedBinder() {
     if (response.ok) {
       const data = await response.json();
       persistedCards = data.cards || [];
-      passwordHash = data.passwordHash || null;
       return persistedCards;
     }
   } catch (e) {
     console.log('No persisted binder file found');
   }
   return [];
+}
+
+// Load password hash from separate file
+async function loadPasswordHash() {
+  try {
+    const response = await fetch(`data/trading-binder-password.json?t=${Date.now()}`);
+    if (response.ok) {
+      const data = await response.json();
+      passwordHash = data.passwordHash || null;
+    }
+  } catch (e) {
+    console.log('No password file found');
+  }
 }
 
 // Compare localStorage vs git and determine sync state
@@ -178,6 +190,8 @@ function getCardState(scryfallId) {
 async function loadBinder() {
   // First load persisted binder from git
   await loadPersistedBinder();
+  // Load password hash from separate file
+  await loadPasswordHash();
   
   const params = new URLSearchParams(window.location.search);
   const shared = params.get('b'); // base64 encoded (legacy)
