@@ -488,6 +488,8 @@ node -c test/test.js
 
 **Minimal code only** - Write the absolute minimum code needed. No verbose implementations.
 
+**Always push changes** - After making code changes, always commit and push to git immediately.
+
 ## Data Flow
 
 ### CSV Import Flow
