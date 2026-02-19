@@ -1,10 +1,67 @@
 // Trading Binder
 let binderCards = [];
+let persistedCards = []; // Cards from git file
+let localOnlyCards = []; // Cards in localStorage but not in git
+let removedCards = []; // Cards in git but not in localStorage
+
+// Load persisted binder from git
+async function loadPersistedBinder() {
+  try {
+    const response = await fetch('data/trading-binder.json');
+    if (response.ok) {
+      const data = await response.json();
+      persistedCards = data.cards || [];
+      return persistedCards;
+    }
+  } catch (e) {
+    console.log('No persisted binder file found');
+  }
+  return [];
+}
+
+// Compare localStorage vs git and determine sync state
+function syncBinder() {
+  const localIds = binderCards.map(c => c.scryfallId);
+  const persistedIds = persistedCards.map(c => c.scryfallId);
+  
+  // Cards in local but not in git
+  localOnlyCards = binderCards.filter(c => !persistedIds.includes(c.scryfallId));
+  
+  // Cards in git but not in local
+  removedCards = persistedCards.filter(p => !localIds.includes(p.scryfallId));
+  
+  updateSyncBanner();
+}
+
+function updateSyncBanner() {
+  const banner = document.getElementById('sync-banner');
+  const count = localOnlyCards.length;
+  
+  if (count > 0) {
+    banner.classList.remove('hidden');
+    banner.querySelector('.unpersisted-count').textContent = count;
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+function getCardState(scryfallId) {
+  const inLocal = binderCards.some(c => c.scryfallId === scryfallId);
+  const inGit = persistedCards.some(c => c.scryfallId === scryfallId);
+  
+  if (inLocal && inGit) return 'persisted';
+  if (inLocal && !inGit) return 'pending';
+  if (!inLocal && inGit) return 'removed';
+  return 'none';
+}
 
 // Load from localStorage or URL
 async function loadBinder() {
+  // First load persisted binder from git
+  await loadPersistedBinder();
+  
   const params = new URLSearchParams(window.location.search);
-  const shared = params.get('b'); // base64 encoded
+  const shared = params.get('b'); // base64 encoded (legacy)
   const legacyShared = params.get('cards'); // legacy format
   
   console.log('Loading binder, collection size:', collection.length);
@@ -48,6 +105,9 @@ async function loadBinder() {
   collection = [...binderCards];
   filteredCollection = [...binderCards];
   
+  // Sync state
+  syncBinder();
+  
   renderBinder();
 }
 
@@ -75,9 +135,17 @@ function renderBinder() {
   
   container.innerHTML = filteredCollection.map(card => {
     let html = renderCardHTML(card, nameCounts);
+    
+    // Add state badge
+    const state = getCardState(card.scryfallId);
+    const stateBadge = state === 'persisted' 
+      ? '<span class="state-badge persisted" title="Persisted to git">✓</span>'
+      : '<span class="state-badge pending" title="Not persisted yet">⚠️</span>';
+    
     // Add remove button before closing div
     const lastDivIndex = html.lastIndexOf('</div>');
     html = html.substring(0, lastDivIndex) + 
+      stateBadge +
       `<button class="remove-from-binder" data-id="${card.scryfallId}" title="Remove from binder">✕</button>` +
       html.substring(lastDivIndex);
     return html;
@@ -112,6 +180,7 @@ function removeFromBinder(scryfallId) {
   // Reset collection and filteredCollection
   collection = [...binderCards];
   filteredCollection = [...binderCards];
+  syncBinder();
   applyFilters();
 }
 
@@ -134,11 +203,28 @@ function onFiltersApplied() {
 }
 
 function generateShareLink() {
-  const ids = binderCards.map(c => c.scryfallId).join(',');
-  // Compress using base64
-  const compressed = btoa(ids);
-  const url = `${window.location.origin}${window.location.pathname}?b=${compressed}`;
-  return url;
+  // New simple share link - just points to trading binder page
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function downloadBinderFile() {
+  const data = {
+    cards: binderCards.map(c => ({
+      scryfallId: c.scryfallId,
+      addedAt: new Date().toISOString()
+    })),
+    lastModified: new Date().toISOString()
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'trading-binder.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showNotification('✓ File downloaded! Save to data/trading-binder.json and commit to git');
 }
 
 async function onCollectionLoaded() {
@@ -158,18 +244,20 @@ async function onCollectionLoaded() {
     setupPriceSlider();
   }
   
+  document.getElementById('download-binder').addEventListener('click', downloadBinderFile);
+  
   document.getElementById('share-binder').addEventListener('click', async () => {
     if (binderCards.length === 0) {
       alert('Add some cards to your binder first!');
       return;
     }
     
-    const url = generateShareLink();
-    
-    // Check URL length
-    if (url.length > 2000) {
-      alert(`Warning: Share link is very long (${url.length} characters). Some platforms may not support it.`);
+    // Check if all cards are persisted
+    if (localOnlyCards.length > 0) {
+      alert(`Warning: You have ${localOnlyCards.length} unpersisted cards. Download and commit the file first for others to see all cards.`);
     }
+    
+    const url = generateShareLink();
     
     try {
       await navigator.clipboard.writeText(url);
