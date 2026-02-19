@@ -147,6 +147,7 @@ async function onCollectionLoaded() {
   // Setup price slider
   if (binderCards.length > 0) {
     maxPriceValue = Math.ceil(Math.max(...binderCards.map(c => getCardPrice(c))));
+    if (maxPriceValue < 10) maxPriceValue = 10; // Minimum range
     setupPriceSlider();
   }
   
