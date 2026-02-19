@@ -35,11 +35,22 @@ function syncBinder() {
 
 function updateSyncBanner() {
   const banner = document.getElementById('sync-banner');
-  const count = localOnlyCards.length;
+  const addedCount = localOnlyCards.length;
+  const removedCount = removedCards.length;
+  const totalChanges = addedCount + removedCount;
   
-  if (count > 0) {
+  if (totalChanges > 0) {
     banner.classList.remove('hidden');
-    banner.querySelector('.unpersisted-count').textContent = count;
+    let message = '⚠️ You have ';
+    if (addedCount > 0 && removedCount > 0) {
+      message += `${addedCount} added and ${removedCount} removed cards`;
+    } else if (addedCount > 0) {
+      message += `${addedCount} unpersisted cards`;
+    } else {
+      message += `${removedCount} removed cards`;
+    }
+    banner.querySelector('.unpersisted-count').textContent = totalChanges;
+    banner.querySelector('span').innerHTML = message;
   } else {
     banner.classList.add('hidden');
   }
