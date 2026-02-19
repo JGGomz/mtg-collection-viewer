@@ -172,6 +172,52 @@ async function loadPasswordHash() {
   }
 }
 
+// Fetch cards from Scryfall by ID
+async function fetchCardsFromScryfall(scryfallIds) {
+  const cards = [];
+  const batchSize = 75;
+  
+  for (let i = 0; i < scryfallIds.length; i += batchSize) {
+    const batch = scryfallIds.slice(i, i + batchSize);
+    try {
+      const response = await fetch('https://api.scryfall.com/cards/collection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifiers: batch.map(id => ({ id })) })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        for (const card of data.data) {
+          cards.push({
+            name: card.name,
+            scryfallId: card.id,
+            setCode: card.set.toUpperCase(),
+            setName: card.set_name,
+            rarity: card.rarity,
+            foil: false,
+            price: card.prices?.usd || '0',
+            imageUrl: card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal,
+            types: card.type_line,
+            colors: card.colors || [],
+            keywords: card.keywords || []
+          });
+        }
+      }
+      
+      // Rate limit
+      if (i + batchSize < scryfallIds.length) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+    } catch (e) {
+      console.error('Failed to fetch batch:', e);
+    }
+  }
+  
+  return cards;
+}
+
+
 // Compare localStorage vs git and determine sync state
 function syncBinder() {
   const localIds = binderCards.map(c => c.scryfallId);
@@ -276,6 +322,15 @@ async function loadBinder() {
         console.log('Loading from git file:', persistedCards.length, 'cards');
         const ids = persistedCards.map(c => c.scryfallId);
         binderCards = collection.filter(c => ids.includes(c.scryfallId));
+        
+        // Fetch missing cards from Scryfall
+        const missingIds = ids.filter(id => !binderCards.find(c => c.scryfallId === id));
+        if (missingIds.length > 0) {
+          console.log('Fetching', missingIds.length, 'cards from Scryfall...');
+          const fetchedCards = await fetchCardsFromScryfall(missingIds);
+          binderCards = [...binderCards, ...fetchedCards];
+        }
+        
         // Only save to localStorage if unlocked
         if (!isLocked) {
           localStorage.setItem('tradingBinder', JSON.stringify(ids));
