@@ -311,7 +311,7 @@ function renderCardDetails(card, collectionCard) {
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const x = (clientX - rect.left) / rect.width - 0.5;
     const y = (clientY - rect.top) / rect.height - 0.5;
-    inner.style.transform = `rotateX(${-y * 20}deg) rotateY(${x * 20}deg)`;
+    inner.style.transform = `rotateX(${-y * 60}deg) rotateY(${x * 120}deg)`;
     inner.style.boxShadow = `${x * -30}px ${15 + y * -15}px 40px rgba(0,0,0,0.5)`;
     inner.style.setProperty('--shimmer-x', `${50 + x * 100}%`);
     inner.style.setProperty('--shimmer-y', `${50 + y * 100}%`);
@@ -459,7 +459,7 @@ async function loadUpgrades(card, collectionCard) {
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const x = (clientX - rect.left) / rect.width - 0.5;
         const y = (clientY - rect.top) / rect.height - 0.5;
-        inner.style.transform = `rotateX(${-y * 15}deg) rotateY(${x * 15}deg)`;
+        inner.style.transform = `rotateX(${-y * 60}deg) rotateY(${x * 120}deg)`;
         inner.style.setProperty('--shimmer-x', `${50 + x * 100}%`);
         inner.style.setProperty('--shimmer-y', `${50 + y * 100}%`);
       };

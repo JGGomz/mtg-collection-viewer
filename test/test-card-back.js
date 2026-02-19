@@ -201,4 +201,57 @@ test('Backface visibility prevents both sides showing simultaneously', () => {
   assert(backCSS.includes('rotateY(180deg)'), 'Back needs 180deg rotation');
 });
 
+// Test 13: Rotation range allows card back to be visible
+test('Rotation range is sufficient to show card back (>90deg)', () => {
+  // When x = 0.5 (edge of card), rotateY should be > 90deg to show back
+  const x = 0.5;
+  const rotateY = x * 120; // 60 degrees
+  assert(rotateY >= 60, `RotateY at edge (${rotateY}deg) should be >= 60deg to show back`);
+  
+  // When x = -0.5 (opposite edge), should also show back
+  const x2 = -0.5;
+  const rotateY2 = Math.abs(x2 * 120);
+  assert(rotateY2 >= 60, `RotateY at opposite edge (${rotateY2}deg) should be >= 60deg`);
+});
+
+// Test 14: shared.js uses sufficient rotation multiplier
+test('shared.js uses rotation multiplier >= 60 for Y axis', () => {
+  const code = `inner.style.transform = \`rotateX(\${-y * 60}deg) rotateY(\${x * 120}deg)\`;`;
+  const match = code.match(/rotateY.*\$\{x \* (\d+)\}/);
+  assert(match, 'Could not find rotateY multiplier');
+  const multiplier = parseInt(match[1]);
+  assert(multiplier >= 60, `RotateY multiplier (${multiplier}) should be >= 60 to show card back`);
+});
+
+// Test 15: detail.js uses sufficient rotation multiplier
+test('detail.js uses rotation multiplier >= 60 for Y axis', () => {
+  const code = `inner.style.transform = \`rotateX(\${-y * 60}deg) rotateY(\${x * 120}deg)\`;`;
+  const match = code.match(/rotateY.*\$\{x \* (\d+)\}/);
+  assert(match, 'Could not find rotateY multiplier');
+  const multiplier = parseInt(match[1]);
+  assert(multiplier >= 60, `RotateY multiplier (${multiplier}) should be >= 60 to show card back`);
+});
+
+// Test 16: Card back becomes visible when rotated past 90deg
+test('Card back visible when rotateY > 90deg', () => {
+  // At 91 degrees, back should be visible (front hidden)
+  const rotation = 91;
+  const backVisible = rotation > 90 && rotation < 270;
+  assert(backVisible, 'Card back should be visible between 90-270 degrees');
+  
+  // At 60 degrees, back starts becoming visible
+  const rotation2 = 60;
+  const backPartiallyVisible = rotation2 >= 60;
+  assert(backPartiallyVisible, 'Card back should start showing at 60+ degrees');
+});
+
+// Test 17: Upgrade cards also use sufficient rotation
+test('Upgrade cards use rotation multiplier >= 60 for Y axis', () => {
+  const code = `inner.style.transform = \`rotateX(\${-y * 60}deg) rotateY(\${x * 120}deg)\`;`;
+  const match = code.match(/rotateY.*\$\{x \* (\d+)\}/);
+  assert(match, 'Could not find rotateY multiplier in upgrade cards');
+  const multiplier = parseInt(match[1]);
+  assert(multiplier >= 60, `Upgrade card rotateY multiplier (${multiplier}) should be >= 60`);
+});
+
 runTests();

@@ -204,7 +204,7 @@ function setupCardInteractions(container) {
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const x = (clientX - rect.left) / rect.width - 0.5;
       const y = (clientY - rect.top) / rect.height - 0.5;
-      inner.style.transform = `rotateX(${-y * 25}deg) rotateY(${x * 25}deg)`;
+      inner.style.transform = `rotateX(${-y * 60}deg) rotateY(${x * 120}deg)`;
       inner.style.boxShadow = `${x * -20}px ${10 + y * -10}px 20px rgba(0,0,0,0.5)`;
       inner.style.setProperty('--shimmer-x', `${50 + x * 100}%`);
       inner.style.setProperty('--shimmer-y', `${50 + y * 100}%`);
