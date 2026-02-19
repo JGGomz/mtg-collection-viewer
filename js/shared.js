@@ -542,6 +542,8 @@ function setupAutocomplete(inputId, listId, getItems) {
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
   
+  if (!input || !list) return; // Skip if elements don't exist
+  
   input.addEventListener('input', () => {
     const val = input.value.toLowerCase();
     if (!val) { list.classList.remove('show'); return; }
