@@ -4,15 +4,25 @@ let binderCards = [];
 // Load from localStorage or URL
 async function loadBinder() {
   const params = new URLSearchParams(window.location.search);
-  const shared = params.get('cards');
+  const shared = params.get('b'); // base64 encoded
+  const legacyShared = params.get('cards'); // legacy format
   
   console.log('Loading binder, collection size:', collection.length);
   
-  if (shared) {
+  if (shared || legacyShared) {
     // Load from shared link
     try {
-      const ids = shared.split(',');
-      console.log('Loading from shared link:', ids.length, 'cards');
+      let ids;
+      if (shared) {
+        // Decode base64
+        const decoded = atob(shared);
+        ids = decoded.split(',');
+        console.log('Loading from compressed link:', ids.length, 'cards');
+      } else {
+        // Legacy format
+        ids = legacyShared.split(',');
+        console.log('Loading from legacy link:', ids.length, 'cards');
+      }
       binderCards = collection.filter(c => ids.includes(c.scryfallId));
       localStorage.setItem('tradingBinder', JSON.stringify(ids));
     } catch (e) {
@@ -113,7 +123,9 @@ function updateStats() {
 
 function generateShareLink() {
   const ids = binderCards.map(c => c.scryfallId).join(',');
-  const url = `${window.location.origin}${window.location.pathname}?cards=${ids}`;
+  // Compress using base64
+  const compressed = btoa(ids);
+  const url = `${window.location.origin}${window.location.pathname}?b=${compressed}`;
   return url;
 }
 
@@ -127,6 +139,12 @@ async function onCollectionLoaded() {
     }
     
     const url = generateShareLink();
+    
+    // Check URL length
+    if (url.length > 2000) {
+      alert(`Warning: Share link is very long (${url.length} characters). Some platforms may not support it.`);
+    }
+    
     try {
       await navigator.clipboard.writeText(url);
       const btn = document.getElementById('share-binder');
