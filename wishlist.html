@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist - MTG Collection Viewer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+</head>
+<body>
+  <header>
+    <h1>💫 Wishlist</h1>
+    <nav>
+      <a href="index.html">Collection</a>
+      <a href="binder.html">Binder</a>
+      <a href="carousel.html">Carousel</a>
+      <a href="timeline.html">Timeline</a>
+      <a href="game-tracker.html">Game Tracker</a>
+      <a href="deck-checker.html">Deck Checker</a>
+      <a href="trade-calculator.html">Trade Calculator</a>
+      <a href="trading-binder.html">Trading Binder</a>
+      <a href="wishlist.html" class="active">Wishlist</a>
+      <a href="trivia.html">Trivia</a>
+      <a href="guess-card.html">Guess Card</a>
+    </nav>
+    <div class="stats">
+      <span>Cards: <strong id="total-cards">0</strong></span>
+      <span>Value (Scryfall USD): <strong id="total-value">$0.00</strong></span>
+    </div>
+  </header>
+
+  <div class="wishlist-actions">
+    <button type="button" id="toggle-lock" class="btn">🔒 Unlock Wishlist</button>
+    <button type="button" id="search-cards" class="btn" style="display: none;">🔍 Search Cards</button>
+    <button type="button" id="download-wishlist" class="btn btn-secondary" style="display: none;">💾 Download File</button>
+    <button type="button" id="clear-wishlist" class="btn btn-danger" style="display: none;">🗑️ Clear Wishlist</button>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="Search cards...">
+    <input type="text" id="set-filter" placeholder="Filter by set...">
+    <select id="rarity-filter">
+      <option value="">All Rarities</option>
+      <option value="common">Common</option>
+      <option value="uncommon">Uncommon</option>
+      <option value="rare">Rare</option>
+      <option value="mythic">Mythic</option>
+    </select>
+    <select id="type-filter">
+      <option value="">All Types</option>
+      <option value="Creature">Creature</option>
+      <option value="Instant">Instant</option>
+      <option value="Sorcery">Sorcery</option>
+      <option value="Enchantment">Enchantment</option>
+      <option value="Artifact">Artifact</option>
+      <option value="Planeswalker">Planeswalker</option>
+      <option value="Land">Land</option>
+    </select>
+    <select id="color-filter">
+      <option value="">All Colors</option>
+      <option value="W">White</option>
+      <option value="U">Blue</option>
+      <option value="B">Black</option>
+      <option value="R">Red</option>
+      <option value="G">Green</option>
+      <option value="C">Colorless</option>
+      <option value="M">Multicolor</option>
+    </select>
+    <select id="sort">
+      <option value="price-desc">Price (High to Low)</option>
+      <option value="price-asc">Price (Low to High)</option>
+      <option value="name">Name (A-Z)</option>
+      <option value="rarity">Rarity</option>
+      <option value="set">Set</option>
+      <option value="cmc-asc">CMC (Low to High)</option>
+      <option value="cmc-desc">CMC (High to Low)</option>
+    </select>
+    <div class="price-slider-container">
+      <label>Price Range</label>
+      <div id="price-slider"></div>
+    </div>
+    <button type="button" id="clear-filters" class="btn btn-secondary">Clear Filters</button>
+  </div>
+
+  <div id="wishlist-collection" class="card-grid"></div>
+
+  <div id="empty-state" class="empty-state">
+    <h2>Your wishlist is empty</h2>
+    <p>Unlock the wishlist and search for cards to add</p>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="password-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>🔓 Unlock Wishlist</h2>
+      <p>Enter password to unlock editing:</p>
+      <input type="password" id="password-input" placeholder="Enter password" autocomplete="off">
+      <div class="modal-actions">
+        <button type="button" id="password-submit" class="btn">Unlock</button>
+        <button type="button" id="password-cancel" class="btn btn-secondary">Cancel</button>
+      </div>
+      <div id="password-error" class="password-error hidden">❌ Incorrect password</div>
+    </div>
+  </div>
+
+  <!-- Search Modal -->
+  <div id="search-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 800px;">
+      <h2>🔍 Search Scryfall</h2>
+      <input type="text" id="scryfall-search" placeholder="Search for cards..." style="width: 100%; margin-bottom: 15px;">
+      <div id="search-results" style="max-height: 400px; overflow-y: auto;"></div>
+      <div class="modal-actions">
+        <button type="button" id="search-close" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>
+  <script src="js/shared.js"></script>
+  <script src="js/wishlist.js"></script>
+</body>
+</html>

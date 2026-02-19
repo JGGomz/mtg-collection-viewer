@@ -3040,3 +3040,37 @@ h1 {
 .password-error.hidden {
   display: none;
 }
+
+/* Wishlist Actions */
+.wishlist-actions {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--bg-tertiary);
+  flex-wrap: wrap;
+}
+
+/* Search Results */
+.search-result {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--bg-tertiary);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-result:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+  transform: translateX(5px);
+}
+
+.search-result img {
+  flex-shrink: 0;
+}
