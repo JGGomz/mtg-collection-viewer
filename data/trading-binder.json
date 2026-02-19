@@ -1,4 +1,73 @@
 {
-  "cards": [],
-  "lastModified": "2026-02-19T21:51:40.856Z"
+  "cards": [
+    {
+      "scryfallId": "5b9fe249-9bda-462b-922c-f01c904c233a",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "ec750874-33fb-44d6-915e-ba0ece9bef74",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "202a98ec-3ce9-47c6-8f8e-cd421e71631d",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "1904db14-6df7-424f-afa5-e3dfab31300a",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "0574d09f-5667-4ecf-bbbb-a1a0ed24068d",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "6fa863a1-8d36-424d-bb65-8e0424617769",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "f743b688-25e8-421e-97b5-d294dda34817",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "b4bbf009-0798-4d8b-b375-6d6fde975c34",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "cb9b9a9d-ae4c-4e04-bf9d-cae48f01292c",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "109447b2-d507-433a-a81c-3a7a255444b1",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "c3eb3895-b64c-46ab-b704-3c46963920ba",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "b9e8c1c1-1917-4858-afd1-ea4412d02375",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "4c5ffa83-c88d-4f5d-851e-a642b229d596",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "3f4a8acd-1d49-4fa7-a88e-83cfe741de89",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "fb220c6c-8dda-45f4-87fa-f754e94fac42",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "803fd65f-4ca6-4fe4-abc2-72aa32ebb3a5",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    },
+    {
+      "scryfallId": "ab474dc9-945d-48cc-8c74-7e5bd59ef8b5",
+      "addedAt": "2026-02-19T22:31:38.415Z"
+    }
+  ],
+  "lastModified": "2026-02-19T22:31:38.415Z"
 }
