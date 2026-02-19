@@ -857,9 +857,10 @@ h1 {
 
 .autocomplete-wrapper {
   position: relative;
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 150px;
   max-width: 250px;
+  width: 200px;
 }
 
 .autocomplete-list {
