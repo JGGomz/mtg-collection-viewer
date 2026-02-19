@@ -249,9 +249,9 @@ function setupCardInteractions(container) {
 }
 
 function showContextMenu(x, y, scryfallId) {
-  // Don't show "Add to Trading Binder" if locked
-  const isBinderLocked = typeof isLocked !== 'undefined' ? isLocked : true;
-  if (isBinderLocked) return; // Don't show context menu at all when locked
+  // Check if binder is locked from localStorage
+  const binderLocked = localStorage.getItem('binderLocked') === '1';
+  if (binderLocked) return; // Don't show context menu at all when locked
   
   // Remove existing menu
   document.querySelectorAll('.context-menu').forEach(m => m.remove());
@@ -280,8 +280,9 @@ function showContextMenu(x, y, scryfallId) {
 }
 
 function addToTradingBinder(scryfallId) {
-  // Check if binder is locked
-  if (typeof isLocked !== 'undefined' && isLocked) {
+  // Check if binder is locked from localStorage
+  const binderLocked = localStorage.getItem('binderLocked') === '1';
+  if (binderLocked) {
     showNotification('🔒 Binder is locked. Cannot add cards.');
     return;
   }
