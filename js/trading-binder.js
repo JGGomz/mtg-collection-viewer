@@ -545,30 +545,6 @@ async function onCollectionLoaded() {
     }
   });
   
-  document.getElementById('share-binder').addEventListener('click', async () => {
-    if (binderCards.length === 0) {
-      alert('Add some cards to your binder first!');
-      return;
-    }
-    
-    // Check if all cards are persisted
-    if (localOnlyCards.length > 0) {
-      alert(`Warning: You have ${localOnlyCards.length} unpersisted cards. Download and commit the file first for others to see all cards.`);
-    }
-    
-    const url = generateShareLink();
-    
-    try {
-      await navigator.clipboard.writeText(url);
-      const btn = document.getElementById('share-binder');
-      const original = btn.textContent;
-      btn.textContent = '✓ Link Copied!';
-      setTimeout(() => btn.textContent = original, 2000);
-    } catch (e) {
-      prompt('Copy this link:', url);
-    }
-  });
-  
   document.getElementById('clear-binder').addEventListener('click', () => {
     if (binderCards.length === 0) return;
     if (isLocked) {
