@@ -1,4 +1,17 @@
 {
-  "cards": [],
-  "lastModified": "2026-02-19T20:56:00Z"
+  "cards": [
+    {
+      "scryfallId": "6e169f68-d336-429d-bdd0-f034a53391a3",
+      "addedAt": "2026-02-19T20:58:06.500Z"
+    },
+    {
+      "scryfallId": "9c9d5f72-e199-4d5b-ae7e-cc5b9bdfae99",
+      "addedAt": "2026-02-19T20:58:06.500Z"
+    },
+    {
+      "scryfallId": "cb425ed1-d428-495a-a56f-07b81e97dcd3",
+      "addedAt": "2026-02-19T20:58:06.500Z"
+    }
+  ],
+  "lastModified": "2026-02-19T20:58:06.500Z"
 }
