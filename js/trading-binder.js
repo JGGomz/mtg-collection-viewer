@@ -99,6 +99,15 @@ async function loadBinder() {
         console.error('Failed to load binder:', e);
       }
     }
+    
+    // If localStorage is empty but git has cards, load from git
+    if (binderCards.length === 0 && persistedCards.length > 0) {
+      console.log('Loading from git file:', persistedCards.length, 'cards');
+      const ids = persistedCards.map(c => c.scryfallId);
+      binderCards = collection.filter(c => ids.includes(c.scryfallId));
+      // Save to localStorage
+      localStorage.setItem('tradingBinder', JSON.stringify(ids));
+    }
   }
   
   // Set collection for filtering
