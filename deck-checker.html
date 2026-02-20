@@ -303,7 +303,7 @@
         }
         
         // Check all printings for flavor names
-        const printingsResponse = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(card.name)}"&unique=prints`);
+        const printingsResponse = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(card.name)}"+game:paper&unique=prints`);
         if (printingsResponse.ok) {
           const printings = await printingsResponse.json();
           for (const printing of printings.data) {
@@ -501,7 +501,7 @@
         
         // Only check all printings if we still haven't found any versions
         if (versions.length === 0) {
-          const printingsResponse = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(card.name)}"&unique=prints`);
+          const printingsResponse = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(card.name)}"+game:paper&unique=prints`);
           if (printingsResponse.ok) {
             const printings = await printingsResponse.json();
             for (const printing of printings.data) {
@@ -692,7 +692,7 @@
         const cardsWithVersions = [];
         for (const card of currentMissingCards) {
           try {
-            const resp = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(card.name)}"&unique=prints&order=usd&dir=desc`);
+            const resp = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(card.name)}"+game:paper&unique=prints&order=usd&dir=desc`);
             if (resp.ok) {
               const data = await resp.json();
               const versions = [];

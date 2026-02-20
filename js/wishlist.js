@@ -309,7 +309,7 @@ async function searchScryfall(query, sortBy = 'usd', setFilter = '') {
   let q = query;
   if (setFilter) q += ` set:${setFilter}`;
   try {
-    const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(q)}&unique=prints&order=${sortBy}&dir=${dir}`);
+    const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(q)}+game:paper&unique=prints&order=${sortBy}&dir=${dir}`);
     if (response.ok) {
       const data = await response.json();
       return (data.data || []).flatMap(card => scryfallToSearchCards(card));

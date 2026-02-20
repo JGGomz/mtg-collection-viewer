@@ -141,7 +141,7 @@ async function parseReceiveList(text) {
 
 async function fetchCardVersions(name) {
   try {
-    const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(name)}"&unique=prints`);
+    const response = await fetch(`https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(name)}"+game:paper&unique=prints`);
     if (!response.ok) return [];
     const data = await response.json();
     return data.data.map(c => ({
