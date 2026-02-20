@@ -501,6 +501,13 @@ function downloadBinderFile() {
 }
 
 async function onCollectionLoaded() {
+  // Clear stats immediately to prevent flash of collection data
+  const tempCollection = [...collection];
+  collection = [];
+  filteredCollection = [];
+  updateStats();
+  collection = tempCollection;
+  
   await loadBinder();
   
   // Update UI based on initial lock state

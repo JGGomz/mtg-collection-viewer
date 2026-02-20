@@ -9,6 +9,11 @@ let passwordHash = null;
 window.isLocked = true;
 
 async function initWishlist() {
+  // Clear stats immediately to prevent flash of collection data
+  collection = [];
+  filteredCollection = [];
+  updateStats();
+  
   const lockState = localStorage.getItem('wishlistLocked');
   isLocked = lockState === null || lockState === '1';
   window.isLocked = isLocked;
