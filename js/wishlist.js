@@ -94,17 +94,13 @@ function scryfallToCards(card) {
     cmc: card.cmc || 0
   };
   
-  if (card.prices?.usd) {
-    cards.push({ ...base, foil: 'normal', price: parseFloat(card.prices.usd) });
+  if (card.nonfoil) {
+    cards.push({ ...base, foil: 'normal', price: parseFloat(card.prices?.usd || '0') });
   }
-  if (card.prices?.usd_foil) {
-    cards.push({ ...base, scryfallId: card.id + '-foil', foil: 'foil', price: parseFloat(card.prices.usd_foil) });
-  }
-  if (card.prices?.usd_etched) {
-    cards.push({ ...base, scryfallId: card.id + '-etched', foil: 'etched', price: parseFloat(card.prices.usd_etched) });
+  if (card.foil) {
+    cards.push({ ...base, scryfallId: card.id + '-foil', foil: 'foil', price: parseFloat(card.prices?.usd_foil || '0') });
   }
   
-  // Fallback if no prices
   if (cards.length === 0) {
     cards.push({ ...base, foil: 'normal', price: 0 });
   }
@@ -392,9 +388,12 @@ function showSearchModal() {
           <div class="collection">${versions.map(cardObj => {
             const inWishlist = wishlistCards.some(c => c.scryfallId === cardObj.scryfallId);
             searchCardMap[cardObj.scryfallId] = cardObj;
-            const html = renderCardHTML(cardObj, {});
-            return `<div class="search-card-wrapper" data-scryfall-id="${cardObj.scryfallId}">
-              ${html}
+            let html = renderCardHTML(cardObj, {});
+            // Fix detail link for foil variants and open in new tab
+            const realId = cardObj.scryfallId.replace(/-foil$/, '').replace(/-etched$/, '');
+            html = html.replace(`href="detail.html?id=${cardObj.scryfallId}"`, `href="detail.html?id=${realId}" target="_blank"`);
+            return `<div class="search-card-wrapper" data-scryfall-id="${cardObj.scryfallId}" style="display:flex;flex-direction:column;">
+              <div style="flex:1;">${html}</div>
               ${inWishlist 
                 ? '<div class="version-added">✓ In Wishlist</div>' 
                 : '<button class="btn btn-small add-to-wishlist-btn" style="width:100%;margin-top:5px;">+ Add to Wishlist</button>'}
