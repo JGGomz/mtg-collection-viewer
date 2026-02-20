@@ -374,19 +374,22 @@ async function loadUpgrades(card, collectionCard) {
     }
     
     const data = await response.json();
-    const upgrades = data.data
-      .filter(c => {
-        // Exclude the exact same version (set + collector number)
-        if (c.set === card.set && c.collector_number === card.collector_number) return false;
-        const price = parseFloat(c.prices?.usd || c.prices?.usd_foil || 0);
-        return price > currentPrice;
-      })
-      .sort((a, b) => {
-        const priceA = parseFloat(a.prices?.usd || a.prices?.usd_foil || 0);
-        const priceB = parseFloat(b.prices?.usd || b.prices?.usd_foil || 0);
-        return priceA - priceB;
-      })
-      .slice(0, 6);
+    // Expand into foil/non-foil versions
+    const expanded = [];
+    for (const c of data.data) {
+      if (c.set === card.set && c.collector_number === card.collector_number) continue;
+      const img = c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal;
+      if (c.nonfoil) {
+        const price = parseFloat(c.prices?.usd || '0');
+        if (price > currentPrice) expanded.push({ id: c.id, img, setName: c.set_name, price, foil: false, uri: c.scryfall_uri });
+      }
+      if (c.foil) {
+        const price = parseFloat(c.prices?.usd_foil || '0');
+        if (price > currentPrice) expanded.push({ id: c.id + '-foil', img, setName: c.set_name, price, foil: true, uri: c.scryfall_uri });
+      }
+    }
+    expanded.sort((a, b) => a.price - b.price);
+    const upgrades = expanded.slice(0, 8);
     
     if (upgrades.length === 0) {
       document.getElementById('upgrades-section').innerHTML = '';
@@ -397,24 +400,18 @@ async function loadUpgrades(card, collectionCard) {
       <div class="upgrades-panel">
         <h3>Possible Upgrades</h3>
         <div class="upgrades-grid">
-          ${upgrades.map(u => {
-            const price = parseFloat(u.prices?.usd || u.prices?.usd_foil || 0);
-            const img = u.image_uris?.normal || u.card_faces?.[0]?.image_uris?.normal;
-            const isFoil = u.finishes?.includes('foil') && !u.finishes?.includes('nonfoil');
-            const foilClass = isFoil ? 'foil' : '';
-            return `
-              <a href="${u.scryfall_uri}" target="_blank" class="upgrade-card ${foilClass}" data-card-id="${u.id}">
+          ${upgrades.map(u => `
+              <a href="${u.uri}" target="_blank" class="upgrade-card ${u.foil ? 'foil' : ''}" data-card-id="${u.id}">
                 <div class="upgrade-inner">
-                  <img src="${img}" alt="${u.set_name}" class="upgrade-front">
+                  <img src="${u.img}" alt="${u.setName}" class="upgrade-front">
                   <img src="images/back.png" alt="Card back" class="upgrade-back">
                 </div>
                 <div class="upgrade-info">
-                  <div class="upgrade-set">${u.set_name}</div>
-                  <div class="upgrade-price">$${price.toFixed(2)}</div>
+                  <div class="upgrade-set">${u.setName}${u.foil ? ' ✨' : ''}</div>
+                  <div class="upgrade-price">$${u.price.toFixed(2)}</div>
                 </div>
               </a>
-            `;
-          }).join('')}
+            `).join('')}
         </div>
       </div>
     `;
