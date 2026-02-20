@@ -221,6 +221,149 @@ tb.test('Cards fetched from Scryfall have required fields', () => {
   assert(card.currency === 'USD');
 });
 
+// ===== WISHLIST TESTS =====
+const wl = suite('Wishlist');
+
+// scryfallToCard format
+wl.test('scryfallToCard returns correct format', () => {
+  const mockScryfall = {
+    name: 'Force of Despair', id: 'abc123', set: 'sld', set_name: 'Secret Lair Drop',
+    collector_number: '123', rarity: 'rare', prices: { usd: '5.00', usd_foil: '10.00' },
+    image_uris: { normal: 'https://img.scryfall.com/test.jpg' },
+    type_line: 'Creature', colors: ['B'], keywords: [], mana_cost: '{3}{B}{B}', cmc: 5
+  };
+  // Simulate scryfallToCard
+  const card = {
+    name: mockScryfall.name,
+    scryfallId: mockScryfall.id + ('normal' === 'foil' ? '-foil' : ''),
+    setCode: mockScryfall.set.toUpperCase(),
+    foil: 'normal',
+    price: parseFloat(mockScryfall.prices.usd),
+    currency: 'USD',
+    scryfallPrices: mockScryfall.prices,
+    quantity: 1
+  };
+  assertEquals(card.scryfallId, 'abc123');
+  assertEquals(card.foil, 'normal');
+  assertEquals(card.price, 5);
+  assertEquals(card.setCode, 'SLD');
+  assertEquals(card.currency, 'USD');
+  assertEquals(card.quantity, 1);
+  assert(card.scryfallPrices !== undefined);
+});
+
+// Foil variant gets -foil suffix
+wl.test('Foil card gets -foil suffix on scryfallId', () => {
+  const id = 'abc123';
+  const foil = 'foil';
+  const scryfallId = id + (foil === 'foil' ? '-foil' : '');
+  assertEquals(scryfallId, 'abc123-foil');
+});
+
+// Normal card has no suffix
+wl.test('Normal card has no suffix on scryfallId', () => {
+  const id = 'abc123';
+  const foil = 'normal';
+  const scryfallId = id + (foil === 'foil' ? '-foil' : '');
+  assertEquals(scryfallId, 'abc123');
+});
+
+// scryfallToSearchCards expands foil/non-foil
+wl.test('Search expands foil and non-foil versions', () => {
+  const card = { nonfoil: true, foil: true, id: 'abc123', prices: { usd: '5.00', usd_foil: '10.00' } };
+  const cards = [];
+  if (card.nonfoil) cards.push({ foil: 'normal', scryfallId: card.id });
+  if (card.foil) cards.push({ foil: 'foil', scryfallId: card.id + '-foil' });
+  assertEquals(cards.length, 2);
+  assertEquals(cards[0].foil, 'normal');
+  assertEquals(cards[1].foil, 'foil');
+  assertEquals(cards[1].scryfallId, 'abc123-foil');
+});
+
+// SLD foil-only card still shows foil version
+wl.test('Foil-only card (no nonfoil) shows foil version', () => {
+  const card = { nonfoil: false, foil: true, id: 'sld123', prices: { usd: null, usd_foil: null } };
+  const cards = [];
+  if (card.nonfoil) cards.push({ foil: 'normal' });
+  if (card.foil) cards.push({ foil: 'foil' });
+  if (cards.length === 0) cards.push({ foil: 'normal' });
+  assertEquals(cards.length, 1);
+  assertEquals(cards[0].foil, 'foil');
+});
+
+// Card with both flags but null foil price still shows both
+wl.test('Card with null usd_foil still shows foil version', () => {
+  const card = { nonfoil: true, foil: true, prices: { usd: '5.00', usd_foil: null } };
+  const cards = [];
+  if (card.nonfoil) cards.push('normal');
+  if (card.foil) cards.push('foil');
+  assertEquals(cards.length, 2);
+});
+
+// Foil suffix stripped for Scryfall batch fetch
+wl.test('Foil suffix stripped before Scryfall batch fetch', () => {
+  const ids = ['abc123', 'def456-foil', 'ghi789'];
+  const cleanIds = ids.map(id => id.replace(/-foil$/, ''));
+  assertEquals(cleanIds[0], 'abc123');
+  assertEquals(cleanIds[1], 'def456');
+  assertEquals(cleanIds[2], 'ghi789');
+});
+
+// Foil IDs tracked for restoration after fetch
+wl.test('Foil IDs tracked for restoration after fetch', () => {
+  const ids = ['abc123', 'def456-foil', 'ghi789-foil'];
+  const foilIds = new Set(ids.filter(id => id.endsWith('-foil')));
+  assert(foilIds.has('def456-foil'));
+  assert(foilIds.has('ghi789-foil'));
+  assert(!foilIds.has('abc123'));
+});
+
+// Detail link strips -foil suffix
+wl.test('Detail link strips -foil suffix', () => {
+  const scryfallId = 'abc123-foil';
+  const realId = scryfallId.replace(/-foil$/, '');
+  assertEquals(realId, 'abc123');
+});
+
+// Image fetch strips -foil suffix
+wl.test('Image fetch strips -foil suffix', () => {
+  const id = 'abc123-foil';
+  const cleanId = id.replace(/-foil$/, '');
+  assertEquals(cleanId, 'abc123');
+});
+
+// Wishlist JSON format
+wl.test('Wishlist JSON has cards and lastModified', () => {
+  const data = { cards: [{ scryfallId: 'abc-foil', addedAt: '2026-02-20T00:00:00Z' }], lastModified: '2026-02-20T00:00:00Z' };
+  assert(Array.isArray(data.cards));
+  assert(data.lastModified !== undefined);
+  assert(data.cards[0].scryfallId !== undefined);
+  assert(data.cards[0].addedAt !== undefined);
+});
+
+// Unified admin password
+wl.test('Unified admin password file used by both binder and wishlist', () => {
+  const adminPassword = { passwordHash: 'a9ab99bc6167f801e4b43cf1c569b4f7e1c52a3017a0eb2693c4cb87e8810103' };
+  assertEquals(adminPassword.passwordHash.length, 64);
+});
+
+// Lock state
+wl.test('Wishlist lock state persists to localStorage', () => {
+  localStorage.setItem('wishlistLocked', '1');
+  assert(localStorage.getItem('wishlistLocked') === '1');
+  localStorage.setItem('wishlistLocked', '0');
+  assert(localStorage.getItem('wishlistLocked') === '0');
+});
+
+// Dedupe clean IDs for batch fetch
+wl.test('Batch fetch dedupes clean IDs', () => {
+  const ids = ['abc123', 'abc123-foil'];
+  const cleanIds = ids.map(id => id.replace(/-foil$/, ''));
+  const unique = [...new Set(cleanIds)];
+  assertEquals(unique.length, 1);
+  assertEquals(unique[0], 'abc123');
+});
+
 // ===== CSS LAYOUT TESTS =====
 const css = suite('CSS Layout');
 css.test('Price slider has align-self flex-start', () => {

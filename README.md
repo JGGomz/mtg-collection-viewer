@@ -130,16 +130,22 @@ Choose between two price sources:
 ### 🔧 Additional Tools
 
 - **Trading Binder** - Git-persisted trading binder with password-protected admin access
-  - **Lock/Unlock System** - Password modal (SHA-256 hash: `a9ab99bc6167f801e4b43cf1c569b4f7e1c52a3017a0eb2693c4cb87e8810103`)
+  - **Lock/Unlock System** - Password modal with SHA-256 verification
   - **Admin Mode (Unlocked)** - Add/remove cards, view pending changes, download JSON for git commit
   - **User Mode (Locked)** - Read-only view of git-persisted cards only
   - **Context Menu** - Right-click any card → "Add to Trading Binder" (admin only)
   - **State Badges** - ✓ (persisted in git) and ⚠️ (pending local changes)
   - **Sync Banner** - Shows unpersisted changes with "Download File" and "Reset to Git" buttons
-  - **View Toggle** - "Show Persisted Only" vs "Show All Cards" (admin only)
-  - **Share Link** - Simple `trading-binder.html` URL (loads from git)
-  - **Cache-Busting** - Prevents stale data with `?t=${Date.now()}`
-  - **Password File** - Separate `data/trading-binder-password.json` (never overwritten on download)
+  - **Scryfall Integration** - Fetches all card data from Scryfall (independent of Collection.csv)
+  - **Default Sort** - By price (high to low)
+- **Wishlist** - Git-persisted wishlist with Scryfall search and password-protected admin access
+  - **Scryfall Search Modal** - Search any card with set filter autocomplete and sort options
+  - **Foil/Non-Foil Versions** - Shows both versions as separate entries using Scryfall's foil flags
+  - **Lock/Unlock System** - Same admin password as trading binder (`data/admin-password.json`)
+  - **State Badges & Sync Banner** - Matching trading binder UX
+  - **Filters** - Search, price slider, foil, keyword, color, sort
+  - **Detail Links** - Open in new tab, handle foil ID suffixes
+  - **3D Card Effects** - Drag to tilt cards in search results
 - **Deck Checker** - Paste a deck list to see which cards you own vs. need
   - **Flavor Name Support** - Automatically matches cards with flavor names (e.g., "Gary, the Snail" → "Toxrill, the Corrosive")
   - Supports Moxfield format (handles double-faced cards with single slash)
@@ -210,17 +216,24 @@ mtg-collection-viewer/
 ├── detail.html         # Card detail page
 ├── deck-checker.html   # Deck checker tool
 ├── trade-calculator.html # Trade calculator
+├── trading-binder.html # Trading binder management
+├── wishlist.html       # Wishlist management
 ├── trivia.html         # Collection trivia game
 ├── guess-card.html     # Guess the card game
 ├── data/
-│   └── Collection.csv  # Your card collection data
+│   ├── Collection.csv  # Your card collection data
+│   ├── trading-binder.json # Trading binder cards
+│   ├── wishlist.json       # Wishlist cards
+│   └── admin-password.json # Shared admin password hash
 ├── js/
 │   ├── shared.js       # Shared functions and utilities
 │   ├── grid.js         # Collection Explorer logic
 │   ├── binder.js       # Binder view logic
 │   ├── carousel.js     # Carousel view logic
 │   ├── timeline.js     # Timeline view logic
-│   └── detail.js       # Card detail page logic
+│   ├── detail.js       # Card detail page logic
+│   ├── trading-binder.js # Trading binder logic
+│   └── wishlist.js     # Wishlist logic with Scryfall search
 ├── css/
 │   ├── style.css       # Main stylesheet
 │   └── detail.css      # Card detail page styles

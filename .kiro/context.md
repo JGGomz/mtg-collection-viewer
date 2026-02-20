@@ -30,10 +30,15 @@ mtg-collection-viewer/
 ├── deck-checker.html       # Deck ownership checker with flavor name support
 ├── trade-calculator.html   # Trade value comparison tool
 ├── trading-binder.html     # Trading binder management
+├── wishlist.html           # Wishlist management
 ├── trivia.html             # Collection trivia quiz game
 ├── guess-card.html         # Progressive hint guessing game
 ├── data/
 │   └── Collection.csv      # Moxfield CSV export (user's collection)
+├── data/
+│   ├── trading-binder.json # Trading binder cards (git-persisted)
+│   ├── wishlist.json       # Wishlist cards (git-persisted)
+│   └── admin-password.json # Shared admin password hash
 ├── js/
 │   ├── shared.js           # Core utilities, filtering, CSV parsing, caching
 │   ├── grid.js             # Collection Explorer logic
@@ -43,7 +48,8 @@ mtg-collection-viewer/
 │   ├── detail.js           # Card detail page logic
 │   ├── game-tracker.js     # Game tracker state management (80KB, 2500+ lines)
 │   ├── trade.js            # Trade calculator logic
-│   └── trading-binder.js   # Trading binder logic
+│   ├── trading-binder.js   # Trading binder logic
+│   └── wishlist.js         # Wishlist logic with Scryfall search
 ├── css/
 │   ├── style.css           # Main stylesheet (49KB)
 │   ├── detail.css          # Card detail page styles
@@ -741,6 +747,9 @@ Name,Set Code,Set Name,Collector Number,Foil,Rarity,Quantity,MoxfieldID,Scryfall
 ### Data Files
 
 - **data/Collection.csv** - User's card collection (Moxfield export)
+- **data/trading-binder.json** - Trading binder cards (git-persisted, no password)
+- **data/wishlist.json** - Wishlist cards (git-persisted)
+- **data/admin-password.json** - Shared admin password hash for binder & wishlist
 - **images/back.png** - MTG card back image
 - **images/favicon.ico** - Site favicon
 
