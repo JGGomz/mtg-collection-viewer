@@ -737,7 +737,7 @@
                       <div class="version-info">
                         <div class="version-set">${v.setName}</div>
                         <div class="version-code">${v.setCode} #${v.collectorNumber}${v.foil === 'foil' ? ' ✨Foil' : ''}</div>
-                        <div class="version-price">$${v.price.toFixed(2)}</div>
+                        <div class="version-price">${v.price > 0 ? '$' + v.price.toFixed(2) : 'No price'}</div>
                       </div>
                     </div>
                   `).join('')}
