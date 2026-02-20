@@ -92,6 +92,7 @@
         </div>
         <div class="results-column missing">
           <h3>✗ Cards Missing</h3>
+          <button type="button" id="add-all-missing-wishlist" class="convert-btn" style="margin-bottom:8px;font-size:0.85em;">💫 Add All Missing to Wishlist</button>
           <div id="missing-list" class="card-grid"></div>
         </div>
       </div>
@@ -129,6 +130,7 @@
     let currentDeckList = [];
     let currentOwnedCards = [];
     let currentMissingCards = [];
+    let selectedMissingVersions = {}; // name -> { scryfallId, imageUrl }
     let db;
 
     function showNotification(message) {
@@ -365,6 +367,20 @@
       
       ownedList.innerHTML = owned.map(c => renderCard(c, true)).join('') || '<div class="empty">No cards owned</div>';
       missingList.innerHTML = missing.map(c => renderCard(c, false)).join('') || '<div class="empty">You own all cards! 🎉</div>';
+      
+      // Right-click on missing cards for wishlist
+      missingList.querySelectorAll('.deck-card-tile').forEach(tile => {
+        tile.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          const name = tile.dataset.name;
+          const version = selectedMissingVersions[name];
+          if (version) {
+            showContextMenu(e.clientX, e.clientY, version.scryfallId);
+          } else {
+            showNotification('Select a version first (Change Missing Card Versions)');
+          }
+        });
+      });
       
       // Load missing card images in parallel (batch of 10)
       const loadMissingImages = async () => {
@@ -780,8 +796,56 @@
         });
       });
       
-      modal.querySelector('.confirm').addEventListener('click', () => modal.remove());
+      modal.querySelector('.confirm').addEventListener('click', () => {
+        // Save selected versions and update missing card tiles
+        modal.querySelectorAll('.version-card.selected').forEach(card => {
+          const name = card.dataset.card;
+          const scryfallId = card.dataset.version;
+          const img = card.querySelector('.version-card-front')?.src;
+          selectedMissingVersions[name] = { scryfallId, imageUrl: img };
+        });
+        modal.remove();
+        
+        // Update missing list tiles with selected version images
+        const missingList = document.getElementById('missing-list');
+        Object.entries(selectedMissingVersions).forEach(([name, v]) => {
+          const tile = missingList.querySelector(`[data-name="${CSS.escape(name)}"]`);
+          if (tile) {
+            tile.querySelector('img').src = v.imageUrl || 'images/back.png';
+            tile.dataset.scryfallId = v.scryfallId;
+          }
+        });
+        
+        // Re-attach right-click handlers
+        missingList.querySelectorAll('.deck-card-tile').forEach(tile => {
+          tile.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            const version = selectedMissingVersions[tile.dataset.name];
+            if (version) showContextMenu(e.clientX, e.clientY, version.scryfallId);
+            else showNotification('Select a version first');
+          });
+        });
+      });
     }
+
+    document.getElementById('add-all-missing-wishlist').addEventListener('click', () => {
+      const versions = Object.values(selectedMissingVersions);
+      if (versions.length === 0) {
+        showNotification('Select versions first (Change Missing Card Versions)');
+        return;
+      }
+      if (localStorage.getItem('wishlistLocked') === '1') {
+        showNotification('🔒 Wishlist is locked');
+        return;
+      }
+      let ids = []; try { ids = JSON.parse(localStorage.getItem('wishlist') || '[]'); } catch(e) {}
+      let added = 0;
+      for (const v of versions) {
+        if (!ids.includes(v.scryfallId)) { ids.push(v.scryfallId); added++; }
+      }
+      localStorage.setItem('wishlist', JSON.stringify(ids));
+      showNotification(`✓ Added ${added} card${added !== 1 ? 's' : ''} to wishlist`);
+    });
 
     loadCollection();
   </script>
