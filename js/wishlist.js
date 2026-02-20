@@ -73,17 +73,17 @@ async function fetchCardsFromScryfall(scryfallIds) {
 }
 
 // Convert Scryfall API card to our card format
-function scryfallToCard(card) {
+function scryfallToCard(card, foil = 'normal') {
   return {
     name: card.name,
-    scryfallId: card.id,
+    scryfallId: card.id + (foil === 'foil' ? '-foil' : ''),
     setCode: card.set.toUpperCase(),
     setName: card.set_name,
     collectorNumber: card.collector_number,
     rarity: card.rarity,
-    foil: 'normal',
+    foil,
     quantity: 1,
-    price: parseFloat(card.prices?.usd || card.prices?.usd_foil || '0'),
+    price: parseFloat(foil === 'foil' ? (card.prices?.usd_foil || '0') : (card.prices?.usd || '0')),
     currency: 'USD',
     scryfallPrices: card.prices,
     imageUrl: card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal,
@@ -94,6 +94,14 @@ function scryfallToCard(card) {
     manaCost: card.mana_cost || '',
     cmc: card.cmc || 0
   };
+}
+
+// Expand into foil/non-foil for search results
+function scryfallToSearchCards(card) {
+  const cards = [];
+  if (card.nonfoil) cards.push(scryfallToCard(card, 'normal'));
+  if (card.foil) cards.push(scryfallToCard(card, 'foil'));
+  return cards.length ? cards : [scryfallToCard(card)];
 }
 
 async function loadWishlist() {
@@ -289,7 +297,7 @@ async function searchScryfall(query, sortBy = 'usd', setFilter = '') {
     const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(q)}&unique=prints&order=${sortBy}&dir=${dir}`);
     if (response.ok) {
       const data = await response.json();
-      return (data.data || []).map(card => scryfallToCard(card));
+      return (data.data || []).flatMap(card => scryfallToSearchCards(card));
     }
   } catch (e) {
     console.error('Search failed:', e);
@@ -348,8 +356,8 @@ function showSearchModal() {
             const inWishlist = wishlistCards.some(c => c.scryfallId === cardObj.scryfallId);
             searchCardMap[cardObj.scryfallId] = cardObj;
             let html = renderCardHTML(cardObj, {});
-            // Open detail in new tab
-            html = html.replace(`href="detail.html?id=${cardObj.scryfallId}"`, `href="detail.html?id=${cardObj.scryfallId}" target="_blank"`);
+            const realId = cardObj.scryfallId.replace(/-foil$/, '');
+            html = html.replace(`href="detail.html?id=${cardObj.scryfallId}"`, `href="detail.html?id=${realId}" target="_blank"`);
             return `<div class="search-card-wrapper" data-scryfall-id="${cardObj.scryfallId}" style="display:flex;flex-direction:column;">
               <div style="flex:1;">${html}</div>
               ${inWishlist 
@@ -364,7 +372,7 @@ function showSearchModal() {
       results.querySelectorAll('.card-image-wrapper').forEach(wrapper => {
         const card = wrapper.closest('.card');
         const img = wrapper.querySelector('.card-image');
-        const id = card.dataset.scryfallId;
+        const id = card.dataset.scryfallId.replace(/-foil$/, '');
         fetchCardImage(id).then(url => { if (url) img.src = url; });
       });
       
