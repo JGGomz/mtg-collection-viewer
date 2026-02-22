@@ -503,8 +503,6 @@ function applyFilters() {
   const [priceMin, priceMax] = priceSlider ? priceSlider.get().map(Number) : [0, maxPriceValue];
   const cmcFilter = window.cmcFilter;
   
-  if (foil) console.log('Foil filter active:', foil, 'Total cards:', collection.length, 'Sample card foils:', collection.slice(0, 5).map(c => c.foil));
-  
   // Get selected color identity
   const colorIdentityChecks = document.querySelectorAll('.color-checkboxes input:checked');
   const selectedColors = [...colorIdentityChecks].map(c => c.value);
