@@ -196,7 +196,7 @@ async function fetchCardsFromScryfall(scryfallIds) {
             setName: card.set_name,
             collectorNumber: card.collector_number,
             rarity: card.rarity,
-            foil: 'normal',
+            foil: 'normal', // Default to normal - foil status not stored in JSON
             quantity: 1,
             price: parseFloat(card.prices?.usd || card.prices?.usd_foil || card.prices?.usd_etched || '0'),
             currency: 'USD',
