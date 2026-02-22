@@ -545,8 +545,7 @@ filters.test('Type filter - Creature', () => {
 
 filters.test('Type filter - Artifact', () => {
   const filtered = mockCollection.filter(c => c.type_line.includes('Artifact'));
-  assertEquals(filtered.length, 1);
-  assertEquals(filtered[0].name, 'Black Lotus');
+  assertEquals(filtered.length, 2); // Black Lotus + Azorius Signet
 });
 
 filters.test('Type filter - Land', () => {
@@ -578,12 +577,12 @@ filters.test('Color filter - Blue', () => {
 
 filters.test('Color filter - Colorless', () => {
   const filtered = mockCollection.filter(c => c.colors.length === 0);
-  assertEquals(filtered.length, 2); // Black Lotus and Forest
+  assertEquals(filtered.length, 3); // Black Lotus, Forest, Azorius Signet
 });
 
 filters.test('Foil filter - Normal', () => {
   const filtered = mockCollection.filter(c => c.foil === 'normal');
-  assertEquals(filtered.length, 4);
+  assertEquals(filtered.length, 5); // Bolt, Elves, Lotus, Forest, Signet
 });
 
 filters.test('Foil filter - Foil', () => {
