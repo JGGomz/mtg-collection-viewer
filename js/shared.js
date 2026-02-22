@@ -766,6 +766,8 @@ function initApp() {
   const nouislider = document.createElement('script');
   nouislider.src = 'https://cdn.jsdelivr.net/npm/nouislider@15/dist/nouislider.min.js';
   nouislider.onload = () => {
+    // Skip CSV collection loading on pages that manage their own data
+    if (typeof initWishlist === 'function' || typeof loadBinder === 'function') return;
     loadCollection().then(() => {
       setupAutocomplete('search', 'search-autocomplete', () => [...new Set(collection.map(c => c.name))]);
       setupAutocomplete('set-filter', 'set-autocomplete', () => [...new Set(collection.map(c => c.setName))]);
