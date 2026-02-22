@@ -224,7 +224,11 @@ function setupCardInteractions(container) {
     card.addEventListener('contextmenu', e => {
       e.preventDefault();
       const scryfallId = card.dataset.scryfallId;
-      showContextMenu(e.clientX, e.clientY, scryfallId);
+      // Get foil status from card data
+      const cardData = collection.find(c => c.scryfallId === scryfallId) || 
+                       filteredCollection.find(c => c.scryfallId === scryfallId);
+      const foil = cardData?.foil || 'normal';
+      showContextMenu(e.clientX, e.clientY, scryfallId, foil);
     });
   });
   
@@ -248,7 +252,7 @@ function setupCardInteractions(container) {
   });
 }
 
-function showContextMenu(x, y, scryfallId) {
+function showContextMenu(x, y, scryfallId, foil = 'normal') {
   // Check lock states
   const binderLocked = localStorage.getItem('binderLocked') === '1';
   const wishlistLocked = localStorage.getItem('wishlistLocked') === '1';
@@ -269,7 +273,7 @@ function showContextMenu(x, y, scryfallId) {
   document.body.appendChild(menu);
   
   const binderBtn = menu.querySelector('[data-action="add-to-binder"]');
-  if (binderBtn) binderBtn.addEventListener('click', () => { addToTradingBinder(scryfallId); menu.remove(); });
+  if (binderBtn) binderBtn.addEventListener('click', () => { addToTradingBinder(scryfallId, foil); menu.remove(); });
   
   const wishlistBtn = menu.querySelector('[data-action="add-to-wishlist"]');
   if (wishlistBtn) wishlistBtn.addEventListener('click', () => { addToWishlist(scryfallId); menu.remove(); });
@@ -279,7 +283,7 @@ function showContextMenu(x, y, scryfallId) {
   }, 0);
 }
 
-function addToTradingBinder(scryfallId) {
+function addToTradingBinder(scryfallId, foil = 'normal') {
   // Check if binder is locked from localStorage
   const binderLocked = localStorage.getItem('binderLocked') === '1';
   if (binderLocked) {
@@ -288,22 +292,24 @@ function addToTradingBinder(scryfallId) {
   }
   
   const stored = localStorage.getItem('tradingBinder');
-  let ids = [];
+  let cards = [];
   
   try {
-    ids = stored ? JSON.parse(stored) : [];
+    cards = stored ? JSON.parse(stored) : [];
   } catch (e) {
-    ids = [];
+    cards = [];
   }
   
-  if (ids.includes(scryfallId)) {
+  // Check if card with same ID and foil already exists
+  const cardKey = `${scryfallId}:${foil}`;
+  if (cards.some(c => `${c.scryfallId}:${c.foil}` === cardKey)) {
     showNotification('Card already in trading binder');
     return;
   }
   
-  ids.push(scryfallId);
-  localStorage.setItem('tradingBinder', JSON.stringify(ids));
-  console.log('Added to binder:', scryfallId, 'Total cards:', ids.length);
+  cards.push({ scryfallId, foil });
+  localStorage.setItem('tradingBinder', JSON.stringify(cards));
+  console.log('Added to binder:', scryfallId, foil, 'Total cards:', cards.length);
   showNotification('✓ Added to trading binder');
 }
 

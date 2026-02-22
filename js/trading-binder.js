@@ -172,13 +172,16 @@ async function loadPasswordHash() {
   }
 }
 
-// Fetch cards from Scryfall by ID
-async function fetchCardsFromScryfall(scryfallIds) {
+// Fetch cards from Scryfall by ID with foil status
+async function fetchCardsFromScryfall(cardData) {
   const cards = [];
   const batchSize = 75;
   
-  for (let i = 0; i < scryfallIds.length; i += batchSize) {
-    const batch = scryfallIds.slice(i, i + batchSize);
+  // Extract unique scryfallIds for batch fetching
+  const uniqueIds = [...new Set(cardData.map(c => c.scryfallId))];
+  
+  for (let i = 0; i < uniqueIds.length; i += batchSize) {
+    const batch = uniqueIds.slice(i, i + batchSize);
     try {
       const response = await fetch('https://api.scryfall.com/cards/collection', {
         method: 'POST',
@@ -188,7 +191,20 @@ async function fetchCardsFromScryfall(scryfallIds) {
       
       if (response.ok) {
         const data = await response.json();
-        for (const card of data.data) {
+        // Create a map of scryfallId -> card data
+        const cardMap = {};
+        data.data.forEach(card => {
+          cardMap[card.id] = card;
+        });
+        
+        // Now create cards with correct foil status
+        for (const cardInfo of cardData) {
+          const card = cardMap[cardInfo.scryfallId];
+          if (!card) continue;
+          
+          const foil = cardInfo.foil || 'normal';
+          const priceKey = foil === 'foil' ? 'usd_foil' : foil === 'etched' ? 'usd_etched' : 'usd';
+          
           cards.push({
             name: card.name,
             scryfallId: card.id,
@@ -196,9 +212,9 @@ async function fetchCardsFromScryfall(scryfallIds) {
             setName: card.set_name,
             collectorNumber: card.collector_number,
             rarity: card.rarity,
-            foil: 'normal', // Default to normal - foil status not stored in JSON
+            foil: foil,
             quantity: 1,
-            price: parseFloat(card.prices?.usd || card.prices?.usd_foil || card.prices?.usd_etched || '0'),
+            price: parseFloat(card.prices?.[priceKey] || card.prices?.usd || '0'),
             currency: 'USD',
             scryfallPrices: card.prices,
             imageUrl: card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal,
@@ -213,7 +229,7 @@ async function fetchCardsFromScryfall(scryfallIds) {
       }
       
       // Rate limit
-      if (i + batchSize < scryfallIds.length) {
+      if (i + batchSize < uniqueIds.length) {
         await new Promise(r => setTimeout(r, 100));
       }
     } catch (e) {
@@ -227,14 +243,15 @@ async function fetchCardsFromScryfall(scryfallIds) {
 
 // Compare localStorage vs git and determine sync state
 function syncBinder() {
-  const localIds = binderCards.map(c => c.scryfallId);
-  const persistedIds = persistedCards.map(c => c.scryfallId);
+  const makeKey = (c) => `${c.scryfallId}:${c.foil || 'normal'}`;
+  const localKeys = binderCards.map(makeKey);
+  const persistedKeys = persistedCards.map(makeKey);
   
   // Cards in local but not in git
-  localOnlyCards = binderCards.filter(c => !persistedIds.includes(c.scryfallId));
+  localOnlyCards = binderCards.filter(c => !persistedKeys.includes(makeKey(c)));
   
   // Cards in git but not in local
-  removedCards = persistedCards.filter(p => !localIds.includes(p.scryfallId));
+  removedCards = persistedCards.filter(p => !localKeys.includes(makeKey(p)));
   
   updateSyncBanner();
 }
@@ -264,9 +281,11 @@ function updateSyncBanner() {
   }
 }
 
-function getCardState(scryfallId) {
-  const inLocal = binderCards.some(c => c.scryfallId === scryfallId);
-  const inGit = persistedCards.some(c => c.scryfallId === scryfallId);
+function getCardState(scryfallId, foil = 'normal') {
+  const makeKey = (c) => `${c.scryfallId}:${c.foil || 'normal'}`;
+  const key = `${scryfallId}:${foil}`;
+  const inLocal = binderCards.some(c => makeKey(c) === key);
+  const inGit = persistedCards.some(c => makeKey(c) === key);
   
   if (inLocal && inGit) return 'persisted';
   if (inLocal && !inGit) return 'pending';
@@ -288,21 +307,21 @@ async function loadBinder() {
   console.log('Loading binder, collection size:', collection.length);
   
   if (shared || legacyShared) {
-    // Load from shared link
+    // Load from shared link (legacy - just IDs)
     try {
       let ids;
       if (shared) {
-        // Decode base64
         const decoded = atob(shared);
         ids = decoded.split(',');
         console.log('Loading from compressed link:', ids.length, 'cards');
       } else {
-        // Legacy format
         ids = legacyShared.split(',');
         console.log('Loading from legacy link:', ids.length, 'cards');
       }
       binderCards = collection.filter(c => ids.includes(c.scryfallId));
-      localStorage.setItem('tradingBinder', JSON.stringify(ids));
+      // Migrate to new format
+      const cardData = binderCards.map(c => ({ scryfallId: c.scryfallId, foil: c.foil || 'normal' }));
+      localStorage.setItem('tradingBinder', JSON.stringify(cardData));
     } catch (e) {
       console.error('Failed to load shared binder:', e);
     }
@@ -313,10 +332,17 @@ async function loadBinder() {
       console.log('LocalStorage tradingBinder:', stored);
       if (stored) {
         try {
-          const ids = JSON.parse(stored);
-          console.log('Loading from localStorage:', ids.length, 'IDs');
-          // Fetch from Scryfall
-          binderCards = await fetchCardsFromScryfall(ids);
+          let cardData = JSON.parse(stored);
+          
+          // Migrate old format (array of IDs) to new format (array of {scryfallId, foil})
+          if (cardData.length > 0 && typeof cardData[0] === 'string') {
+            console.log('Migrating old format to new format...');
+            cardData = cardData.map(id => ({ scryfallId: id, foil: 'normal' }));
+            localStorage.setItem('tradingBinder', JSON.stringify(cardData));
+          }
+          
+          console.log('Loading from localStorage:', cardData.length, 'cards');
+          binderCards = await fetchCardsFromScryfall(cardData);
           console.log('Fetched cards:', binderCards.length);
         } catch (e) {
           console.error('Failed to load binder:', e);
@@ -328,15 +354,20 @@ async function loadBinder() {
     if (isLocked || binderCards.length === 0) {
       if (persistedCards.length > 0) {
         console.log('Loading from git file:', persistedCards.length, 'cards');
-        const ids = persistedCards.map(c => c.scryfallId);
         
-        // Fetch all cards from Scryfall
-        console.log('Fetching', ids.length, 'cards from Scryfall...');
-        binderCards = await fetchCardsFromScryfall(ids);
+        // Migrate old format if needed
+        let cardData = persistedCards;
+        if (cardData.length > 0 && !cardData[0].foil) {
+          console.log('Git data missing foil status, defaulting to normal');
+          cardData = cardData.map(c => ({ ...c, foil: c.foil || 'normal' }));
+        }
+        
+        console.log('Fetching', cardData.length, 'cards from Scryfall...');
+        binderCards = await fetchCardsFromScryfall(cardData);
         
         // Only save to localStorage if unlocked
         if (!isLocked) {
-          localStorage.setItem('tradingBinder', JSON.stringify(ids));
+          localStorage.setItem('tradingBinder', JSON.stringify(cardData));
         }
       }
     }
@@ -401,7 +432,7 @@ function renderBinder() {
     let html = renderCardHTML(card, nameCounts);
     
     // Add state badge
-    const state = getCardState(card.scryfallId);
+    const state = getCardState(card.scryfallId, card.foil);
     const stateBadge = state === 'persisted' 
       ? '<span class="state-badge persisted" title="Persisted to git">✓</span>'
       : '<span class="state-badge pending" title="Not persisted yet">⚠️</span>';
@@ -410,7 +441,7 @@ function renderBinder() {
     const lastDivIndex = html.lastIndexOf('</div>');
     html = html.substring(0, lastDivIndex) + 
       stateBadge +
-      `<button class="remove-from-binder" data-id="${card.scryfallId}" title="Remove from binder">✕</button>` +
+      `<button class="remove-from-binder" data-id="${card.scryfallId}" data-foil="${card.foil}" title="Remove from binder">✕</button>` +
       html.substring(lastDivIndex);
     return html;
   }).join('');
@@ -435,7 +466,7 @@ function renderBinder() {
         showNotification('🔒 Binder is locked. Unlock to remove cards.');
         return;
       }
-      removeFromBinder(btn.dataset.id);
+      removeFromBinder(btn.dataset.id, btn.dataset.foil);
     });
   });
   
@@ -443,8 +474,8 @@ function renderBinder() {
   updateStats();
 }
 
-function removeFromBinder(scryfallId) {
-  binderCards = binderCards.filter(c => c.scryfallId !== scryfallId);
+function removeFromBinder(scryfallId, foil = 'normal') {
+  binderCards = binderCards.filter(c => !(c.scryfallId === scryfallId && c.foil === foil));
   saveBinder();
   // Reset collection and filteredCollection
   collection = [...binderCards];
@@ -459,8 +490,8 @@ function removeFromBinder(scryfallId) {
 }
 
 function saveBinder() {
-  const ids = binderCards.map(c => c.scryfallId);
-  localStorage.setItem('tradingBinder', JSON.stringify(ids));
+  const cardData = binderCards.map(c => ({ scryfallId: c.scryfallId, foil: c.foil || 'normal' }));
+  localStorage.setItem('tradingBinder', JSON.stringify(cardData));
 }
 
 function updateStats() {
@@ -485,6 +516,7 @@ function downloadBinderFile() {
   const data = {
     cards: binderCards.map(c => ({
       scryfallId: c.scryfallId,
+      foil: c.foil || 'normal',
       addedAt: new Date().toISOString()
     })),
     lastModified: new Date().toISOString()
