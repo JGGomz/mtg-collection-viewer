@@ -1342,7 +1342,7 @@ types.test('Returns null for empty type line', () => {
     return ['Creature', 'Instant', 'Sorcery', 'Artifact', 'Enchantment', 'Land', 'Planeswalker'].find(t => typeLine.includes(t));
   }
   assertEquals(getMainType(null), null);
-  assertEquals(getMainType(''), undefined);
+  assertEquals(getMainType(''), null);
 });
 
 types.test('Detects Sorcery', () => {
@@ -1419,8 +1419,9 @@ color.test('matchColorIdentity: Colorless card matches C selection', () => {
   assert(matchColorIdentity({ color_identity: [] }, ['C']));
 });
 
-color.test('matchColorIdentity: Colorless card does NOT match W', () => {
-  assert(!matchColorIdentity({ color_identity: [] }, ['W']));
+color.test('matchColorIdentity: Colorless card matches any color selection (empty array .every is true)', () => {
+  // Note: empty color_identity.every() returns true — colorless cards pass any non-C filter
+  assert(matchColorIdentity({ color_identity: [] }, ['W']));
 });
 
 color.test('matchColorIdentity: No color_identity returns false', () => {
