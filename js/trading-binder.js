@@ -364,6 +364,8 @@ async function loadBinder() {
         
         console.log('Fetching', cardData.length, 'cards from Scryfall...');
         binderCards = await fetchCardsFromScryfall(cardData);
+        console.log('Fetched cards:', binderCards.length);
+        console.log('Sample card foil status:', binderCards[0]?.foil, binderCards[0]?.name);
         
         // Only save to localStorage if unlocked
         if (!isLocked) {
