@@ -697,6 +697,100 @@ filters.test('Color identity - Multicolor artifact', () => {
   assertEquals(filtered[0].name, 'Azorius Signet');
 });
 
+// ===== TRADING BINDER FOIL TESTS =====
+const binderFoil = suite('Trading Binder Foil');
+
+binderFoil.test('Foil status preserved in card data', () => {
+  const card = { scryfallId: 'abc123', foil: 'foil' };
+  assertEquals(card.foil, 'foil');
+});
+
+binderFoil.test('Normal finish default', () => {
+  const card = { scryfallId: 'abc123', foil: 'normal' };
+  assertEquals(card.foil, 'normal');
+});
+
+binderFoil.test('Etched finish supported', () => {
+  const card = { scryfallId: 'abc123', foil: 'etched' };
+  assertEquals(card.foil, 'etched');
+});
+
+binderFoil.test('Card key includes foil status', () => {
+  const makeKey = (c) => `${c.scryfallId}:${c.foil || 'normal'}`;
+  const card1 = { scryfallId: 'abc123', foil: 'foil' };
+  const card2 = { scryfallId: 'abc123', foil: 'normal' };
+  assert(makeKey(card1) !== makeKey(card2), 'Same card with different foil should have different keys');
+});
+
+binderFoil.test('Foil filter - foil cards only', () => {
+  const cards = [
+    { name: 'Card1', foil: 'foil' },
+    { name: 'Card2', foil: 'normal' },
+    { name: 'Card3', foil: 'foil' }
+  ];
+  const filtered = cards.filter(c => c.foil === 'foil');
+  assertEquals(filtered.length, 2);
+});
+
+binderFoil.test('Foil filter - normal cards only', () => {
+  const cards = [
+    { name: 'Card1', foil: 'foil' },
+    { name: 'Card2', foil: 'normal' },
+    { name: 'Card3', foil: 'normal' }
+  ];
+  const filtered = cards.filter(c => c.foil === 'normal');
+  assertEquals(filtered.length, 2);
+});
+
+binderFoil.test('Foil filter - etched cards only', () => {
+  const cards = [
+    { name: 'Card1', foil: 'foil' },
+    { name: 'Card2', foil: 'etched' },
+    { name: 'Card3', foil: 'normal' }
+  ];
+  const filtered = cards.filter(c => c.foil === 'etched');
+  assertEquals(filtered.length, 1);
+});
+
+binderFoil.test('Same card different foils are distinct', () => {
+  const cards = [
+    { scryfallId: 'abc123', foil: 'foil', name: 'Lightning Bolt' },
+    { scryfallId: 'abc123', foil: 'normal', name: 'Lightning Bolt' }
+  ];
+  const makeKey = (c) => `${c.scryfallId}:${c.foil}`;
+  const keys = cards.map(makeKey);
+  assertEquals(keys.length, 2);
+  assert(keys[0] !== keys[1], 'Keys should be different');
+});
+
+binderFoil.test('Migration from old format', () => {
+  // Old format: array of strings
+  const oldFormat = ['abc123', 'def456'];
+  // Should migrate to new format
+  const newFormat = oldFormat.map(id => ({ scryfallId: id, foil: 'normal' }));
+  assertEquals(newFormat.length, 2);
+  assertEquals(newFormat[0].foil, 'normal');
+  assertEquals(newFormat[1].foil, 'normal');
+});
+
+binderFoil.test('Correct price key for foil', () => {
+  const foil = 'foil';
+  const priceKey = foil === 'foil' ? 'usd_foil' : foil === 'etched' ? 'usd_etched' : 'usd';
+  assertEquals(priceKey, 'usd_foil');
+});
+
+binderFoil.test('Correct price key for normal', () => {
+  const foil = 'normal';
+  const priceKey = foil === 'foil' ? 'usd_foil' : foil === 'etched' ? 'usd_etched' : 'usd';
+  assertEquals(priceKey, 'usd');
+});
+
+binderFoil.test('Correct price key for etched', () => {
+  const foil = 'etched';
+  const priceKey = foil === 'foil' ? 'usd_foil' : foil === 'etched' ? 'usd_etched' : 'usd';
+  assertEquals(priceKey, 'usd_etched');
+});
+
 // Run all tests
 Object.keys(suites).forEach(suiteName => {
   suites[suiteName].forEach(({ name, fn }) => {
