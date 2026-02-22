@@ -296,11 +296,6 @@
       const result = [];
       let current = '';
       let inQuotes = false;
-    
-    function parseCSVLine(line) {
-      const result = [];
-      let current = '';
-      let inQuotes = false;
       for (const char of line) {
         if (char === '"') inQuotes = !inQuotes;
         else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
@@ -516,7 +511,7 @@
         
         // Also check wishlist
         if (wishlistCards.has(card.name)) {
-          allVersions.push(...wishlistCards.get(card.name));
+          wishlistCards.get(card.name).forEach(v => allVersions.push({...v, _fromWishlist: true}));
         }
         
         if (allVersions.length > 1) {
@@ -616,22 +611,16 @@
             <h2>Select Card Versions</h2>
             <p>Choose from owned or wishlisted versions:</p>
             <div class="version-list">
-              ${multipleVersions.map((card, idx) => {
-                // Determine which versions are from wishlist
-                const wishlistVersions = wishlistCards.get(card.name) || [];
-                const wishlistIds = new Set(wishlistVersions.map(v => `${v.scryfallId}:${v.foil}`));
-                
-                return `
+              ${multipleVersions.map((card, idx) => `
                 <div class="version-group">
                   <div class="version-card-name">${card.quantity}x ${card.name.charAt(0).toUpperCase() + card.name.slice(1)}</div>
                   <div class="version-cards">
-                    ${card.versions.map((v, vIdx) => {
-                      const isWishlisted = wishlistIds.has(`${v.scryfallId}:${v.foil}`);
-                      return `
+                    ${card.versions.map((v, vIdx) => `
                       <div class="version-card ${vIdx === 0 ? 'selected' : ''} ${v.foil !== 'normal' ? v.foil : ''}" 
                            data-card="${card.name}" 
-                           data-version="${v.scryfallId}">
-                        ${isWishlisted ? '<div class="wishlist-badge" style="position:absolute;top:5px;right:5px;background:#9b59b6;color:white;padding:2px 6px;border-radius:4px;font-size:0.7em;z-index:1;">💫 Wishlist</div>' : ''}
+                           data-version="${v.scryfallId}"
+                           data-source="${v._fromWishlist ? 'wishlist' : 'collection'}">
+                        ${v._fromWishlist ? '<div style="position:absolute;top:5px;right:5px;background:#9b59b6;color:white;padding:2px 6px;border-radius:4px;font-size:0.7em;z-index:1;">💫 Wishlist</div>' : ''}
                         <div class="version-card-inner">
                           <img src="https://cards.scryfall.io/normal/front/${v.scryfallId[0]}/${v.scryfallId[1]}/${v.scryfallId}.jpg" 
                                alt="${card.name}" 
@@ -644,14 +633,10 @@
                           <div class="version-code">${v.setCode.toUpperCase()} #${v.collectorNumber}${v.foil !== 'normal' ? ' *' + v.foil.charAt(0).toUpperCase() + '*' : ''}</div>
                         </div>
                       </div>
-                    `;
-                    }
-                    ).join('')}
+                    `).join('')}
                   </div>
                 </div>
-              `;
-              }
-              }).join('')}
+              `).join('')}
             </div>
             <div class="modal-actions">
               <button class="modal-btn confirm">Confirm Selection</button>
