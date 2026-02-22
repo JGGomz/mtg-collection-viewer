@@ -520,12 +520,30 @@
       // Convert missing cards that are on the wishlist
       for (const card of currentMissingCards) {
         const name = card.name.toLowerCase();
+        let wlVersions = null;
         if (wishlistCards.has(name)) {
-          const wlVersions = wishlistCards.get(name).map(v => ({...v, _fromWishlist: true}));
-          if (wlVersions.length > 1) {
-            multipleVersions.push({ ...card, versions: wlVersions });
+          wlVersions = wishlistCards.get(name);
+        } else {
+          // Try alternate name lookup via oracle_id
+          try {
+            const res = await fetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(card.name)}`);
+            if (res.ok) {
+              const data = await res.json();
+              for (const [wlName, versions] of wishlistCards.entries()) {
+                if (versions.some(v => v.oracle_id === data.oracle_id)) {
+                  wlVersions = versions;
+                  break;
+                }
+              }
+            }
+          } catch (e) {}
+        }
+        if (wlVersions) {
+          const tagged = wlVersions.map(v => ({...v, _fromWishlist: true}));
+          if (tagged.length > 1) {
+            multipleVersions.push({ ...card, versions: tagged });
           } else {
-            selectedVersions.set(card.name, wlVersions[0]);
+            selectedVersions.set(card.name, tagged[0]);
           }
         }
       }
