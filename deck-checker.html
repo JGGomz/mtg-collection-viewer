@@ -491,17 +491,14 @@
       const selectedVersions = new Map();
       const multipleVersions = [];
       
-      // Convert cards we own OR have in wishlist
+      // Convert owned cards (collection + wishlist versions)
       for (const card of currentOwnedCards) {
-        // Get all versions for this card from collection AND wishlist
         const allVersions = [];
         
-        // Check exact name match in collection
         if (collectionCards.has(card.name)) {
           allVersions.push(...collectionCards.get(card.name));
         } else {
-          // Card was found via alternate name lookup during check
-          for (const [collectionName, versions] of collectionCards.entries()) {
+          for (const [, versions] of collectionCards.entries()) {
             if (versions.some(v => v.scryfallId === card.scryfallId)) {
               allVersions.push(...versions);
               break;
@@ -509,15 +506,27 @@
           }
         }
         
-        // Also check wishlist
-        if (wishlistCards.has(card.name)) {
-          wishlistCards.get(card.name).forEach(v => allVersions.push({...v, _fromWishlist: true}));
+        if (wishlistCards.has(card.name.toLowerCase())) {
+          wishlistCards.get(card.name.toLowerCase()).forEach(v => allVersions.push({...v, _fromWishlist: true}));
         }
         
         if (allVersions.length > 1) {
           multipleVersions.push({ ...card, versions: allVersions });
         } else if (allVersions.length === 1) {
           selectedVersions.set(card.name, allVersions[0]);
+        }
+      }
+      
+      // Convert missing cards that are on the wishlist
+      for (const card of currentMissingCards) {
+        const name = card.name.toLowerCase();
+        if (wishlistCards.has(name)) {
+          const wlVersions = wishlistCards.get(name).map(v => ({...v, _fromWishlist: true}));
+          if (wlVersions.length > 1) {
+            multipleVersions.push({ ...card, versions: wlVersions });
+          } else {
+            selectedVersions.set(card.name, wlVersions[0]);
+          }
         }
       }
       
