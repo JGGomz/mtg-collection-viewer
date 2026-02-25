@@ -452,19 +452,33 @@ gt.test('4 players initialized', () => assertEquals(state.players.length, 4));
 
 ### Test Coverage
 
-**100+ tests across 12 suites:**
-- Game Tracker (30+ tests) - Core state, life, damage, counters, mana, commander damage, mulligans, advanced mechanics
+**250+ tests across 27 suites:**
+- Game Tracker (35 tests) - Core state, life, damage, counters, mana, commander damage, mulligans, advanced mechanics
+- Advanced Filters (29 tests) - Type, color, color identity, subtype, rarity, finish, keyword, CMC
+- Deck Checker Wishlist (25 tests) - Name/oracle_id/realName matching, _fromWishlist tagging, flavor names
+- Wishlist (14 tests) - Foil handling, batch fetch, detail links, persistence
+- Color Matching (14 tests) - matchCardColor, matchColorIdentity, colorless, multicolor, subset logic
+- Trading Binder Foil (12 tests) - Foil pricing, migration, composite keys
+- Deck List Parsing (11 tests) - Quantity formats, comments, DFC normalization, set stripping
+- Scryfall Card Conversion (11 tests) - Normal/foil/flavor names, price fallbacks, DFC images
+- Price Logic (10 tests) - formatPrice currencies, getCardPrice foil types, fallbacks
+- Card Type Detection (9 tests) - All 7 card types, null/empty, compound types
+- Trading Binder (9 tests) - LocalStorage, lock state, password, Scryfall fields
+- Sort Order (8 tests) - Price desc/asc, quantity, cache-load re-sort regression
+- Render Card HTML (8 tests) - Foil classes, duplicate detection, type badges
+- Binder Card State (6 tests) - persisted/pending/removed/none, foil distinction
+- CSV Parsing (5 tests) - Quoted fields, commas in names, empty fields
+- Binder Sync (5 tests) - Add/remove detection, foil changes
+- Wishlist Card State (4 tests) - persisted/pending/none, foil suffix
 - Card Back Visibility (4 tests) - 3D flip effects, CSS transforms
+- Context Menu (4 tests) - Wishlist/binder options, lock states, localStorage
+- Detail Page Versions (4 tests) - Foil/non-foil expansion, null prices, drag prevention
+- CSS Layout (4 tests) - Price slider, autocomplete, filter positioning
+- Detail Page (3 tests) - Card detail rendering, 3D effects
+- Deck Checker (3 tests) - Version selector, add all missing, game:paper filter
 - Flavor Names (2 tests) - Deck checker flavor name matching
 - Foil Shimmer (2 tests) - Foil effect standardization
 - Copies Filter (2 tests) - Oracle ID duplicate detection
-- Detail Page (3 tests) - Card detail rendering, 3D effects
-- Trading Binder (8 tests) - LocalStorage, lock state, password, Scryfall fields
-- Wishlist (14 tests) - Foil handling, batch fetch, detail links, persistence
-- Context Menu (4 tests) - Wishlist/binder options, lock states, localStorage
-- Deck Checker (3 tests) - Version selector, add all missing, game:paper filter
-- Detail Page Versions (4 tests) - Foil/non-foil expansion, null prices, drag prevention
-- CSS Layout (4 tests) - Price slider, autocomplete, filter positioning
 
 ### Running Tests
 
@@ -480,7 +494,9 @@ node -c test/test.js
 
 **Pre-push Hook:**
 - Validates all JavaScript files with `node -c`
+- Validates inline `<script>` tags in all HTML files
 - Reminds to run browser tests
+- Located at `.git/hooks/pre-push`
 - Located at `.git/hooks/pre-push`
 
 ### Testing Principles
@@ -506,20 +522,20 @@ node -c test/test.js
 ### CSV Import Flow
 
 ```
-1. User exports collection from Moxfield as CSV
-2. Replace data/Collection.csv with exported file
-3. loadCollection() parses CSV line-by-line
-4. parseCSVLine() handles quoted fields, commas in names
-5. Store in collection[] array
-6. Apply initial filters
-7. Render cards
+1. User exports collection from Moxfield or ManaBox as CSV
+2. Replace data/Collection.csv with exported file (case-insensitive filename)
+3. loadCollection() fetches CSV with fallback (Collection.csv → collection.csv)
+4. Header row is parsed to auto-detect column positions by name
+5. parseCSVLine() handles quoted fields, commas in names
+6. Windows \r\n line endings are stripped
+7. Cards without name or scryfallId are filtered out
+8. Store in collection[] array
+9. Apply initial filters and sort
+10. Render cards
 ```
 
-**CSV Format (Moxfield):**
-```csv
-Name,Set Code,Set Name,Collector Number,Foil,Rarity,Quantity,MoxfieldID,Scryfall ID,Price,...
-"Lightning Bolt",LEA,"Limited Edition Alpha",161,false,common,1,abc123,def456,1.50,...
-```
+**Supported CSV formats:** Moxfield, ManaBox (auto-detected by header names)
+**Header matching:** Case-insensitive, supports alternate names (e.g., "Edition Code" = "Set Code")
 
 ### Full Data Loading Flow
 

@@ -186,27 +186,62 @@ Fully responsive layout that works on desktop, tablet, and mobile devices.
 
 ## Setup
 
-1. Export your collection from [Moxfield](https://www.moxfield.com/) as CSV
-2. Replace `Collection.csv` with your exported file
-3. Host the files on any static web server (GitHub Pages, Netlify, etc.)
+1. Fork this repository
+2. Export your collection as CSV from [Moxfield](https://www.moxfield.com/) or [ManaBox](https://www.manabox.app/)
+3. Replace `data/Collection.csv` with your exported file (either `Collection.csv` or `collection.csv` works)
+4. Enable GitHub Pages (Settings → Pages → Source: Deploy from branch → `main`)
+5. Your site will be live at `https://<username>.github.io/mtg-collection-viewer/`
 
 ### CSV Format
 
-The app expects a Moxfield-style CSV with these columns:
-- Name, Set Code, Set Name, Collector Number, Foil, Rarity, Quantity, MoxfieldID, Scryfall ID, Price, etc.
+The app auto-detects columns by header name, so it works with different CSV formats. Required columns:
+- **Name** — Card name
+- **Scryfall ID** — Scryfall UUID (required for images and data)
+- **Set Code** (or `Edition Code`) — Set abbreviation
+- **Set Name** (or `Edition`) — Full set name
+- **Collector Number** (or `Card Number`)
+- **Foil** — `true`/`false` or `normal`/`foil`/`etched`
+- **Rarity** — `common`, `uncommon`, `rare`, `mythic`
+- **Quantity** (or `Count`)
+- **Price** (or `Purchase price`)
+- **Currency** (or `Purchase price currency`) — defaults to `USD`
+
+Both Moxfield and ManaBox CSV exports are supported out of the box.
+
+### Changing the Admin Password
+
+The trading binder and wishlist use a shared password for admin access (add/remove cards). The password hash is stored in `data/admin-password.json`.
+
+To set your own password:
+
+1. Generate a SHA-256 hash of your desired password:
+   ```bash
+   echo -n "your-password-here" | shasum -a 256
+   ```
+2. Replace the hash in `data/admin-password.json`:
+   ```json
+   {
+     "passwordHash": "your-generated-hash-here"
+   }
+   ```
+3. Commit and push
+
+Or generate the hash in your browser console:
+```javascript
+crypto.subtle.digest('SHA-256', new TextEncoder().encode('your-password-here'))
+  .then(buf => console.log([...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('')));
+```
 
 ## Testing
 
-The project includes comprehensive test suites:
+The project includes a comprehensive test suite with 250+ tests across 27 suites:
 
-- **test/index.html** - Unified test runner (80+ tests)
-- **test/test.js** - All test cases
+- **test/index.html** — Open in a browser to run all tests
+- **test/test.js** — All test cases
 
-Open `test/index.html` in a browser to run the test suite.
-- [Chart.js](https://www.chartjs.org/) for analytics charts
-- [noUiSlider](https://refreshless.com/nouislider/) for price range slider
-- [Scryfall API](https://scryfall.com/docs/api) for card images and data
-- IndexedDB for local caching of images and card data
+Test coverage includes: game tracker, filters, deck checker wishlist integration, CSV parsing, price logic, color matching, sort order, card state management, and more.
+
+A pre-push git hook validates all JavaScript (including inline `<script>` tags in HTML files) before allowing pushes.
 
 ## Project Structure
 
