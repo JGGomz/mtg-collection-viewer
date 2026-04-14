@@ -2,7 +2,7 @@
 
 An immersive, interactive web application for viewing and exploring your Magic: The Gathering card collection. Features stunning visual effects, multiple view modes, comprehensive filtering, detailed analytics, and a full-featured game tracker.
 
-🔗 **Live Demo:** [https://pnz1990.github.io/mtg-collection-viewer/](https://pnz1990.github.io/mtg-collection-viewer/index.html)
+🔗 **Live Demo:** [https://jggomz.github.io/mtg-collection-viewer/](https://jggomz.github.io/mtg-collection-viewer/index.html)
 
 ![MTG Collection Viewer](https://img.shields.io/badge/MTG-Collection%20Viewer-blue)
 
